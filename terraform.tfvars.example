@@ -1,0 +1,8 @@
+rancher_access_key   = "token-abc123..."
+rancher_secret_key   = "xxxxxxxxxxxxxxxxxxxxxxxx"
+
+ssh_user             = "debian"
+ssh_private_key_path = "~/.ssh/id_rsa"
+
+controlplane_ip      = "192.168.10.10"
+worker_ips           = ["192.168.10.11", "192.168.10.12"]
