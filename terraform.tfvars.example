@@ -1,3 +1,7 @@
+rancher_url          = "https://rancher-1.dimarino.local"
+
+cluster_name         = "k8s-2"
+kubernetes_version   = "v1.34.6+rke2r1"
 rancher_access_key   = "token-abc123..."
 rancher_secret_key   = "xxxxxxxxxxxxxxxxxxxxxxxx"
 
@@ -6,3 +10,8 @@ ssh_private_key_path = "~/.ssh/id_rsa"
 
 controlplane_ip      = "192.168.10.10"
 worker_ips           = ["192.168.10.11", "192.168.10.12"]
+
+lb_ip_pool           = ["192.168.14.139/32", "192.168.14.140/32", "192.168.14.141/32"]
+
+cluster_cidr         = "10.244.0.0/16"
+service_cidr         = "10.96.0.0/18"

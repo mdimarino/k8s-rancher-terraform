@@ -39,6 +39,18 @@ terraform apply -var-file=terraform.tfvars
 | `controlplane_ip` | IP of the control plane node |
 | `worker_ips` | List of worker node IPs |
 
+## Post-provisioning steps
+
+After `terraform apply` completes, apply the control plane taint manually. The taint cannot be set during node registration and must be applied once the cluster is ready.
+
+```bash
+kubectl apply -f manifests/controlplane-taint.yaml
+kubectl -n kube-system wait --for=condition=Complete job/apply-controlplane-taint --timeout=60s
+kubectl get nodes -o custom-columns=NAME:.metadata.name,TAINTS:.spec.taints
+```
+
+The Job runs on a worker node, applies `node-role.kubernetes.io/control-plane=:NoSchedule` to all control plane nodes, and self-deletes after 2 minutes.
+
 ## Outputs
 
 | Output | Description |
