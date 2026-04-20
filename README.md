@@ -19,13 +19,69 @@ Terraform configuration to provision an RKE2 Kubernetes cluster via Rancher2. Re
 - 3 VMs reachable via SSH with the same user/key
 - Rancher API credentials (access key + secret key)
 
+## Project layout
+
+This repo is organised as a reusable child module plus a thin root that calls it, so multiple clusters can share the same code but keep separate state.
+
+```
+.
+├── modules/rke2-cluster/   # reusable cluster module
+├── main.tf                 # root: rancher2_setting + module call
+├── provider.tf             # rancher2 provider config
+├── variables.tf            # root inputs (forwarded to the module)
+├── outputs.tf              # forwards module outputs
+└── terraform-k8s-<N>.tfvars  # one file per cluster
+```
+
+State is isolated per cluster via Terraform workspaces — each workspace gets its own state file under `terraform.tfstate.d/<workspace>/`, so an apply on one cluster never touches another.
+
 ## Usage
 
+Create a `.tfvars` file per cluster (one already exists for each of `k8s-2`…`k8s-5`). Use [terraform.tfvars.example](terraform.tfvars.example) as a template for new clusters.
+
+One-time init:
+
 ```bash
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your values
 terraform init
-terraform apply -var-file=terraform.tfvars
+```
+
+Provision each cluster in its own workspace:
+
+```bash
+# First time per cluster — creates the workspace:
+terraform workspace new k8s-2
+terraform apply -var-file=terraform-k8s-2.tfvars
+
+terraform workspace new k8s-3
+terraform apply -var-file=terraform-k8s-3.tfvars
+
+terraform workspace new k8s-4
+terraform apply -var-file=terraform-k8s-4.tfvars
+
+terraform workspace new k8s-5
+terraform apply -var-file=terraform-k8s-5.tfvars
+```
+
+Switching between existing clusters:
+
+```bash
+terraform workspace select k8s-3
+terraform plan -var-file=terraform-k8s-3.tfvars
+```
+
+Running applies in parallel (each shell sets its own `TF_WORKSPACE`, avoiding the shared `.terraform/environment` file):
+
+```bash
+TF_WORKSPACE=k8s-2 terraform apply -var-file=terraform-k8s-2.tfvars &
+TF_WORKSPACE=k8s-3 terraform apply -var-file=terraform-k8s-3.tfvars &
+wait
+```
+
+Destroying one cluster only touches its own workspace state:
+
+```bash
+terraform workspace select k8s-3
+terraform destroy -var-file=terraform-k8s-3.tfvars
 ```
 
 ## Variables
