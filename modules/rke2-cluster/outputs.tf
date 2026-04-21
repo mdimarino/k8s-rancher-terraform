@@ -11,3 +11,9 @@ output "registration_command" {
   description = "Comando base de registro (caso precise rodar manualmente)"
   sensitive   = true
 }
+
+output "kubeconfig" {
+  value       = data.external.kubeconfig.result["content"]
+  description = "Contents of /etc/rancher/rke2/rke2.yaml from the control plane"
+  sensitive   = true
+}

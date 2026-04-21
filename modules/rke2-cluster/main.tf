@@ -112,3 +112,12 @@ resource "null_resource" "workers" {
     ]
   }
 }
+
+data "external" "kubeconfig" {
+  depends_on = [null_resource.controlplane]
+
+  program = [
+    "bash", "-c",
+    "ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i '${var.ssh_private_key_path}' '${var.ssh_user}@${var.controlplane_ip}' 'sudo cat /etc/rancher/rke2/rke2.yaml' | python3 -c \"import sys,json; print(json.dumps({'content': sys.stdin.read()}))\""
+  ]
+}
